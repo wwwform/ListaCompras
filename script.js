@@ -1,97 +1,112 @@
-document.getElementById('adicionar').addEventListener('click', adicionarItem);
-document.getElementById('limpar').addEventListener('click', limparLista);
-document.getElementById('exportar').addEventListener('click', exportarLista);
-
-let total = 0;
-
-function adicionarItem() {
-    const item = document.getElementById('item').value;
-    const quantidade = parseFloat(document.getElementById('quantidade').value);
-    const valor = parseFloat(document.getElementById('valor').value);
-
-    if (!item || quantidade <= 0 || valor <= 0) {
-        alert("Preencha todos os campos corretamente.");
-        return;
-    }
-
-    const subtotal = quantidade * valor;
-    total += subtotal;
-
+// Esperar o carregamento completo do DOM
+document.addEventListener('DOMContentLoaded', () => {
+    const itemInput = document.getElementById('item');
+    const quantidadeInput = document.getElementById('quantidade');
+    const valorInput = document.getElementById('valor');
+    const adicionarBtn = document.getElementById('adicionar');
+    const limparBtn = document.getElementById('limpar');
     const lista = document.getElementById('itens-lista');
-    const li = document.createElement('li');
-    li.textContent = `${item} - ${quantidade} x R$ ${valor.toFixed(2)} = R$ ${subtotal.toFixed(2)}`;
-    lista.appendChild(li);
+    const totalSpan = document.getElementById('total');
 
-    document.getElementById('total').textContent = `R$ ${total.toFixed(2)}`;
+    let total = 0;
+    let itens = [];
 
-    // Limpar campos
-    document.getElementById('item').value = '';
-    document.getElementById('quantidade').value = '';
-    document.getElementById('valor').value = '';
-
-    salvarNoLocalStorage();
-}
-
-function limparLista() {
-    if (confirm("Tem certeza que deseja limpar todos os itens da lista?")) {
-        document.getElementById('itens-lista').innerHTML = '';
-        total = 0;
-        document.getElementById('total').textContent = "R$ 0,00";
-        localStorage.removeItem('itens');
-        localStorage.removeItem('total');
-    }
-}
-
-function exportarLista() {
-    const itens = document.getElementById('itens-lista').getElementsByTagName('li');
-    let texto = "Itens da Lista de Compras:\n\n";
-
-    for (let i = 0; i < itens.length; i++) {
-        texto += itens[i].textContent + "\n";
+    // Carregar dados do localStorage se existirem
+    if (localStorage.getItem('itens')) {
+        itens = JSON.parse(localStorage.getItem('itens'));
+        total = parseFloat(localStorage.getItem('total')) || 0;
+        atualizarLista();
+        atualizarTotal();
     }
 
-    texto += `\nTotal: R$ ${total.toFixed(2)}`;
+    adicionarBtn.addEventListener('click', adicionarItem);
+    limparBtn.addEventListener('click', limparLista);
 
-    const blob = new Blob([texto], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'lista_de_compras.txt';
-    a.click();
-    URL.revokeObjectURL(url);
-}
+    function adicionarItem() {
+        const item = itemInput.value.trim();
+        const quantidade = parseFloat(quantidadeInput.value);
+        const valor = parseFloat(valorInput.value);
 
-// Salva a lista e total no localStorage
-function salvarNoLocalStorage() {
-    const itens = [];
-    const listaElement = document.getElementById('itens-lista').getElementsByTagName('li');
-    
-    for (let i = 0; i < listaElement.length; i++) {
-        itens.push(listaElement[i].textContent);
+        if (!item || isNaN(quantidade) || quantidade <= 0 || isNaN(valor) || valor <= 0) {
+            alert("Preencha todos os campos corretamente.");
+            return;
+        }
+
+        const subtotal = quantidade * valor;
+        total += subtotal;
+
+        const itemFormatado = {
+            nome: item,
+            quantidade: quantidade,
+            valor: valor,
+            subtotal: subtotal
+        };
+
+        itens.push(itemFormatado);
+        salvarDados();
+
+        atualizarLista();
+        atualizarTotal();
+        limparCampos();
     }
 
-    localStorage.setItem('itens', JSON.stringify(itens));
-    localStorage.setItem('total', total);
-}
-
-// Restaura a lista e total do localStorage
-function restaurarDoLocalStorage() {
-    const itens = JSON.parse(localStorage.getItem('itens'));
-    const totalSalvo = localStorage.getItem('total');
-
-    if (itens) {
-        const lista = document.getElementById('itens-lista');
-        itens.forEach(item => {
+    function atualizarLista() {
+        lista.innerHTML = '';
+        itens.forEach(({ nome, quantidade, valor, subtotal }) => {
             const li = document.createElement('li');
-            li.textContent = item;
+            li.textContent = `${nome} - ${quantidade} x R$ ${valor.toFixed(2)} = R$ ${subtotal.toFixed(2)}`;
             lista.appendChild(li);
         });
-        total = parseFloat(totalSalvo);
-        document.getElementById('total').textContent = `R$ ${total.toFixed(2)}`;
     }
-}
 
-// Chama a função para restaurar ao carregar a página
-window.onload = function() {
-    restaurarDoLocalStorage();
-};
+    function atualizarTotal() {
+        totalSpan.textContent = `R$ ${total.toFixed(2)}`;
+    }
+
+    function limparCampos() {
+        itemInput.value = '';
+        quantidadeInput.value = '';
+        valorInput.value = '';
+    }
+
+    function limparLista() {
+        if (confirm("Tem certeza que deseja limpar todos os itens da lista?")) {
+            itens = [];
+            total = 0;
+            salvarDados();
+            atualizarLista();
+            atualizarTotal();
+        }
+    }
+
+    function salvarDados() {
+        localStorage.setItem('itens', JSON.stringify(itens));
+        localStorage.setItem('total', total);
+    }
+
+    // Exportar lista como arquivo .txt
+    const exportarBtn = document.createElement('button');
+    exportarBtn.textContent = 'Exportar Lista';
+    exportarBtn.className = 'btn';
+    exportarBtn.addEventListener('click', () => {
+        if (itens.length === 0) {
+            alert("Não há itens para exportar.");
+            return;
+        }
+
+        const conteudo = itens.map(i =>
+            `${i.nome} - ${i.quantidade} x R$ ${i.valor.toFixed(2)} = R$ ${i.subtotal.toFixed(2)}`
+        ).join('\n') + `\n\nTotal: R$ ${total.toFixed(2)}`;
+
+        const blob = new Blob([conteudo], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'lista_de_compras.txt';
+        a.click();
+        URL.revokeObjectURL(url);
+    });
+
+    document.querySelector('.footer').appendChild(exportarBtn);
+});
