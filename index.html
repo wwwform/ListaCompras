@@ -4,7 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lista de Compras</title>
+    
+    <!-- Adicionando o Manifesto -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- Corrigir caminho para o CSS -->
     <link rel="stylesheet" href="css/style.css">
+    
+    <!-- Adicionando o ícone para PWA -->
+    <link rel="icon" href="icons/icon-192x192.png">
+    
+    <!-- Iniciando o Service Worker -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/service-worker.js').then(function(registration) {
+                console.log('Service Worker registrado com sucesso:', registration);
+            }).catch(function(error) {
+                console.log('Falha ao registrar Service Worker:', error);
+            });
+        }
+    </script>
 </head>
 <body>
 
@@ -28,11 +47,10 @@
         <div class="footer">
             <p>Total: <span id="total">R$ 0,00</span></p>
             <button id="limpar" class="btn">Limpar Lista</button>
-            <button id="exportar" class="btn">Exportar Lista</button>
         </div>
     </div>
 
-    <!-- Corrigir o caminho para o JS -->
+    <!-- Corrigir caminho para o JS -->
     <script src="script.js" defer></script>
 </body>
 </html>
