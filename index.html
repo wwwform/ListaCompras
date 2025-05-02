@@ -1,14 +1,12 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Lista de Compras</title>
-    <link rel="stylesheet" href="css/style.css">
-
-    <!-- Meta tags para transformar em aplicativo mobile -->
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#4CAF50">
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="manifest" href="manifest.json" />
+    <meta name="theme-color" content="#4CAF50" />
 </head>
 <body>
 
@@ -18,9 +16,9 @@
         </header>
 
         <div class="input-section">
-            <input type="text" id="item" placeholder="Digite o item" class="input">
-            <input type="number" id="quantidade" placeholder="Quantidade" class="input">
-            <input type="number" id="valor" placeholder="Valor Unitário (R$)" class="input">
+            <input type="text" id="item" placeholder="Digite o item" class="input" />
+            <input type="number" id="quantidade" placeholder="Quantidade" class="input" />
+            <input type="number" id="valor" placeholder="Valor Unitário (R$)" class="input" />
             <button id="adicionar" class="btn">Adicionar Item</button>
         </div>
 
@@ -32,10 +30,17 @@
         <div class="footer">
             <p>Total: <span id="total">R$ 0,00</span></p>
             <button id="limpar" class="btn">Limpar Lista</button>
-            <!-- Botão Exportar é inserido dinamicamente pelo JS -->
+            <button id="exportar" class="btn">Exportar Lista</button>
         </div>
     </div>
 
     <script src="script.js" defer></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('service-worker.js')
+                .then(() => console.log('Service Worker registrado com sucesso'))
+                .catch(err => console.error('Erro ao registrar Service Worker:', err));
+        }
+    </script>
 </body>
 </html>
