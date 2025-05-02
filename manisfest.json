@@ -2,7 +2,7 @@
   "name": "Lista de Compras",
   "short_name": "Compras",
   "description": "Aplicativo para lista de compras.",
-  "start_url": ".",
+  "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#4CAF50",
